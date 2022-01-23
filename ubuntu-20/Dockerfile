@@ -1,4 +1,5 @@
-# Base off phusion baseimage (that supports running multiple processes) - see https://github.com/phusion/baseimage-docker
+# Based off phusion baseimage (ubuntu image that supports running
+# multiple processes) - see https://github.com/phusion/baseimage-docker
 FROM phusion/baseimage:focal-1.1.0
 
 LABEL description="Container for Ubuntu 20.04 development" 
@@ -8,6 +9,15 @@ CMD ["/sbin/my_init"]
 
 # install build dependencies 
 RUN apt update && DEBIAN_FRONTEND=noninteractive apt install -y build-essential openssh-server cmake ninja-build emacs git cscope
+
+# Add Sudo
+RUN apt install -y sudo
+
+# Add ripgrep
+RUN apt install -y ripgrep
+
+# Clean up APT when done.
+RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 RUN rm -f /etc/service/sshd/down
 
@@ -21,10 +31,10 @@ ENV USERNAME=mcross
 
 RUN useradd -m -d /home/${USERNAME} -s /bin/bash -G sudo -p '*' ${USERNAME} && mkdir -p /home/${USERNAME}/.ssh && chmod 700 /home/${USERNAME}/.ssh && chown -R ${USERNAME}:${USERNAME} /home/${USERNAME}/.ssh
 
+# Enable passwordless sudo access
+RUN echo '%sudo ALL=(ALL:ALL) NOPASSWD: ALL' > /etc/sudoers.d/nopasswd && chmod 0440 /etc/sudoers.d/nopasswd
+
 COPY --chown=${USERNAME}:${USERNAME} id_ed25519.pub /home/${USERNAME}/.ssh/authorized_keys
 
 # expose port 22 
 EXPOSE 22
-
-# Clean up APT when done.
-RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*

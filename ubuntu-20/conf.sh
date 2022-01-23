@@ -1,0 +1,3 @@
+USERNAME=mcross
+SSH_PORT=5020
+IMAGE_NAME=u20-dev
