@@ -1,0 +1,6 @@
+#!/bin/bash
+
+THISDIR=$(dirname $0)
+. ${THISDIR}/conf.sh
+
+ssh -p ${SSH_PORT} localhost "$@"

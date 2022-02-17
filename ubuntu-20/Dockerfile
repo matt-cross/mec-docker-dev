@@ -16,6 +16,12 @@ RUN apt install -y sudo
 # Add ripgrep
 RUN apt install -y ripgrep
 
+# Add some older compilers and cross-compilers
+
+RUN echo "deb http://archive.ubuntu.com/ubuntu/ xenial main" >> /etc/apt/sources.list && echo "deb http://archive.ubuntu.com/ubuntu/ xenial universe" >> /etc/apt/sources.list && echo "deb http://archive.ubuntu.com/ubuntu/ bionic main" >> /etc/apt/sources.list && echo "deb http://archive.ubuntu.com/ubuntu/ bionic universe" >> /etc/apt/sources.list && apt update
+
+RUN apt install -y clang-4.0 g++-5 g++-10-aarch64-linux-gnu g++-8-arm-linux-gnueabi
+
 # Clean up APT when done.
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
