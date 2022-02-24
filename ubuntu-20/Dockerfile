@@ -22,6 +22,10 @@ RUN echo "deb http://archive.ubuntu.com/ubuntu/ xenial main" >> /etc/apt/sources
 
 RUN apt install -y clang-4.0 g++-5 g++-10-aarch64-linux-gnu g++-8-arm-linux-gnueabi
 
+# Add language servers
+RUN apt install -y clangd python3-pip
+RUN pip3 install python-lsp-server
+
 # Clean up APT when done.
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
@@ -36,6 +40,9 @@ RUN /etc/my_init.d/00_regen_ssh_host_keys.sh
 ENV USERNAME=mcross
 
 RUN useradd -m -d /home/${USERNAME} -s /bin/bash -G sudo -p '*' ${USERNAME} && mkdir -p /home/${USERNAME}/.ssh && chmod 700 /home/${USERNAME}/.ssh && chown -R ${USERNAME}:${USERNAME} /home/${USERNAME}/.ssh
+
+# Link .emacs
+RUN rm -rf /home/${USERNAME}/.emacs.d && ln -s sources/docker-dev/dot-emacs.d /home/${USERNAME}/.emacs.d && chown -h ${USERNAME}:${USERNAME} /home/${USERNAME}/.emacs.d
 
 # Enable passwordless sudo access
 RUN echo '%sudo ALL=(ALL:ALL) NOPASSWD: ALL' > /etc/sudoers.d/nopasswd && chmod 0440 /etc/sudoers.d/nopasswd
