@@ -22,9 +22,14 @@ RUN echo "deb http://archive.ubuntu.com/ubuntu/ xenial main" >> /etc/apt/sources
 
 RUN apt install -y clang-4.0 g++-5 g++-10-aarch64-linux-gnu g++-8-arm-linux-gnueabi
 
+
 # Add language servers
 RUN apt install -y clangd python3-pip
 RUN pip3 install python-lsp-server
+
+# Add utilities necessary for X support
+
+RUN apt install -y x11-apps xauth
 
 # Clean up APT when done.
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
@@ -35,6 +40,9 @@ RUN rm -f /etc/service/sshd/down
 # have to do that yourself. You may also comment out this instruction; the
 # init system will auto-generate one during boot.
 RUN /etc/my_init.d/00_regen_ssh_host_keys.sh
+
+# Tell ssh to only support IPv4
+RUN echo 'AddressFamily inet' >> /etc/ssh/sshd_config
 
 # Set up a user
 ENV USERNAME=mcross
@@ -47,7 +55,7 @@ RUN rm -rf /home/${USERNAME}/.emacs.d && ln -s sources/docker-dev/dot-emacs.d /h
 # Enable passwordless sudo access
 RUN echo '%sudo ALL=(ALL:ALL) NOPASSWD: ALL' > /etc/sudoers.d/nopasswd && chmod 0440 /etc/sudoers.d/nopasswd
 
-COPY --chown=${USERNAME}:${USERNAME} id_ed25519.pub /home/${USERNAME}/.ssh/authorized_keys
+COPY --chown=${USERNAME}:${USERNAME} authorized_keys /home/${USERNAME}/.ssh/authorized_keys
 
 # expose port 22 
 EXPOSE 22
