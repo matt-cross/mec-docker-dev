@@ -22,6 +22,10 @@ RUN echo "deb http://archive.ubuntu.com/ubuntu/ xenial main" >> /etc/apt/sources
 
 RUN apt install -y clang-4.0 g++-5 g++-10-aarch64-linux-gnu g++-8-arm-linux-gnueabi
 
+# Add utilities necessary for X support
+
+RUN apt install -y x11-apps xauth
+
 # Clean up APT when done.
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
@@ -32,6 +36,9 @@ RUN rm -f /etc/service/sshd/down
 # init system will auto-generate one during boot.
 RUN /etc/my_init.d/00_regen_ssh_host_keys.sh
 
+# Tell ssh to only support IPv4
+RUN echo 'AddressFamily inet' >> /etc/ssh/sshd_config
+
 # Set up a user
 ENV USERNAME=mcross
 
@@ -40,7 +47,7 @@ RUN useradd -m -d /home/${USERNAME} -s /bin/bash -G sudo -p '*' ${USERNAME} && m
 # Enable passwordless sudo access
 RUN echo '%sudo ALL=(ALL:ALL) NOPASSWD: ALL' > /etc/sudoers.d/nopasswd && chmod 0440 /etc/sudoers.d/nopasswd
 
-COPY --chown=${USERNAME}:${USERNAME} id_ed25519.pub /home/${USERNAME}/.ssh/authorized_keys
+COPY --chown=${USERNAME}:${USERNAME} authorized_keys /home/${USERNAME}/.ssh/authorized_keys
 
 # expose port 22 
 EXPOSE 22
